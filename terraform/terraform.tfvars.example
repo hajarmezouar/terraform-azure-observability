@@ -18,3 +18,15 @@ resource_group_name = "rg-prenom-nom"
 # tags = {
 #   project = "tp-azure"
 # }
+
+# Alert receiver
+alert_email = "team@example.com"
+
+# Prometheus VM
+prometheus_admin_username = "azureadmin"
+
+# Public key only. Never add the private key.
+prometheus_ssh_public_key = "ssh-ed25519 REPLACE_WITH_YOUR_PUBLIC_KEY prometheus-vm"
+
+# Public IPv4 address allowed to connect to the Prometheus VM over SSH.
+admin_source_cidr = "203.0.113.10/32"

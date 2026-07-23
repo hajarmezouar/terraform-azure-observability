@@ -31,6 +31,94 @@ resource "azurerm_application_insights" "func" {
   tags = var.tags
 }
 
+# Azure Monitor Workspace stores the Prometheus-compatible metrics.
+resource "azurerm_monitor_workspace" "prometheus" {
+  name                = "amw-${var.owner}-tf"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+
+  public_network_access_enabled = true
+
+  tags = var.tags
+}
+
+# Public ingestion endpoint used by Prometheus remote_write.
+resource "azurerm_monitor_data_collection_endpoint" "prometheus" {
+  name                = "dce-${var.owner}-prometheus"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  kind                = "Linux"
+
+  public_network_access_enabled = true
+
+  tags = var.tags
+}
+
+# Routes Microsoft-PrometheusMetrics to the Azure Monitor Workspace.
+resource "azurerm_monitor_data_collection_rule" "prometheus" {
+  name                        = "dcr-${var.owner}-prometheus"
+  resource_group_name         = var.resource_group_name
+  location                    = var.location
+  data_collection_endpoint_id = azurerm_monitor_data_collection_endpoint.prometheus.id
+  kind                        = "Linux"
+
+  data_sources {
+    prometheus_forwarder {
+      name    = "prometheus-forwarder"
+      streams = ["Microsoft-PrometheusMetrics"]
+    }
+  }
+
+  destinations {
+    monitor_account {
+      monitor_account_id = azurerm_monitor_workspace.prometheus.id
+      name               = "managed-prometheus"
+    }
+  }
+
+  data_flow {
+    streams      = ["Microsoft-PrometheusMetrics"]
+    destinations = ["managed-prometheus"]
+  }
+
+  tags = var.tags
+}
+
+# Public IP used for administrative SSH access to the Prometheus VM.
+resource "azurerm_public_ip" "prometheus" {
+  name                = "pip-prometheus-${var.owner}"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  allocation_method   = "Static"
+  sku                 = "Standard"
+
+  tags = var.tags
+}
+
+# Network interface attached to the existing backend subnet.
+resource "azurerm_network_interface" "prometheus" {
+  name                = "nic-prometheus-${var.owner}"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = var.prometheus_subnet_id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.prometheus.id
+  }
+
+  tags = var.tags
+}
+
+locals {
+  prometheus_remote_write_url = format(
+    "%s/dataCollectionRules/%s/streams/Microsoft-PrometheusMetrics/api/v1/write?api-version=2023-04-24",
+    azurerm_monitor_data_collection_endpoint.prometheus.metrics_ingestion_endpoint,
+    azurerm_monitor_data_collection_rule.prometheus.immutable_id
+  )
+}
+
 resource "azurerm_monitor_diagnostic_setting" "app_service" {
   name                       = "diag-app-${var.owner}"
   target_resource_id         = var.app_service_id
@@ -61,57 +149,6 @@ resource "azurerm_monitor_diagnostic_setting" "storage" {
   }
 }
 
-#resource #"azurerm_application_insights_standard_availability#_test" "app_health" {
-#  name                    = "avail-app-${var.owner}#"
-#  resource_group_name     = var.resource_group_name
-#  location                = var.location
-#  application_insights_id = #azurerm_application_insights.app.id
-#
-#  geo_locations = [
-#    "emea-fr-pra-edge",
-#    "emea-nl-ams-azr",
-#    "emea-gb-db3-azr"
-#  ]
-#
-#  frequency = 300
-#  timeout   = 30
-#
-#  tags = var.tags
-#
-#  request {
-#    url = "${var.app_service_url}/health"
-#  }
-#
-#  validation_rules {
-#    expected_status_code = 200
-#  }
-#}
-
-#resource #"azurerm_application_insights_standard_availability#_test" "function_health" {
-#  name                    = "avail-func-${var.#owner}"
-#  resource_group_name     = var.resource_group_name
-#  location                = var.location
-#  application_insights_id = #azurerm_application_insights.func.id
-#
-#  geo_locations = [
-#    "emea-fr-pra-edge",
-#    "emea-nl-ams-azr",
-#    "emea-gb-db3-azr"
-#  ]
-#
-#  frequency = 300
-#  timeout   = 30
-#
-#  tags = var.tags
-#
-#  request {
-#    url = "${var.function_app_url}/api/#http_trigger"
-#  }
-#
-#  validation_rules {
-#    expected_status_code = 200
-#  }
-#}
 
 resource "azurerm_monitor_action_group" "team" {
   name                = "ag-${var.owner}"
@@ -175,3 +212,4 @@ resource "azurerm_monitor_metric_alert" "cpu" {
 
   tags = var.tags
 }
+

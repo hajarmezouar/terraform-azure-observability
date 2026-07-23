@@ -94,6 +94,7 @@ module "network" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   tags                = local.tags
+  admin_source_cidr   = var.admin_source_cidr
 }
 
 # ── Observability ───────────────────────────────────────────────────────────────────
@@ -101,18 +102,21 @@ module "observability" {
   source = "./modules/observability"
 
   owner               = var.owner
-  resource_group_name = var.resource_group_name
-  location            = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
   tags                = local.tags
 
   app_service_id     = module.app_service.app_service_id
   function_app_id    = module.function_app.function_app_id
   storage_account_id = module.storage.storage_account_id
+  service_plan_id    = azurerm_service_plan.plan.id
 
-  service_plan_id = azurerm_service_plan.plan.id
+  app_service_hostname = "app-${var.owner}-tf.azurewebsites.net"
+  function_app_url     = "https://${module.function_app.default_hostname}"
 
-  app_service_url  = "https://${module.app_service.default_hostname}"
-  function_app_url = "https://${module.function_app.default_hostname}"
+  prometheus_subnet_id      = module.network.subnet_backend_id
+  prometheus_admin_username = var.prometheus_admin_username
+  prometheus_ssh_public_key = var.prometheus_ssh_public_key
 
-  alert_email = "hajarmezouar617@gmail.com"
+  alert_email = var.alert_email
 }

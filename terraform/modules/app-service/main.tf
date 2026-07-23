@@ -35,7 +35,10 @@ resource "azurerm_linux_web_app" "app" {
   }
 
   app_settings = {
-    APPINSIGHTS_CONNECTION_STRING = var.application_insights_connection_string
+    APPLICATIONINSIGHTS_CONNECTION_STRING = var.application_insights_connection_string
+    APPLICATIONINSIGHTS_ROLE_NAME         = "log-analyser"
+    SCM_DO_BUILD_DURING_DEPLOYMENT        = "true"
+    OWNER                                 = var.owner
   }
 
   logs {

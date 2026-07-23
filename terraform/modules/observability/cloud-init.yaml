@@ -1,0 +1,73 @@
+#cloud-config
+
+package_update: true
+package_upgrade: false
+
+packages:
+  - ca-certificates
+  - curl
+  - tar
+
+write_files:
+  - path: /etc/prometheus/prometheus.yml
+    owner: root:root
+    permissions: "0644"
+    content: |
+      global:
+        scrape_interval: 15s
+        evaluation_interval: 15s
+        external_labels:
+          environment: "tp"
+          source: "prometheus-vm"
+
+      scrape_configs:
+        - job_name: "log-analyser"
+          scheme: "https"
+          metrics_path: "/metrics"
+          static_configs:
+            - targets:
+                - "${app_service_hostname}"
+
+      remote_write:
+        - url: "${remote_write_url}"
+          azuread:
+            cloud: "AzurePublic"
+            managed_identity:
+              client_id: ""
+
+  - path: /etc/systemd/system/prometheus.service
+    owner: root:root
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Prometheus Monitoring
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=simple
+      User=prometheus
+      Group=prometheus
+      ExecStart=/usr/local/bin/prometheus \
+        --config.file=/etc/prometheus/prometheus.yml \
+        --storage.tsdb.path=/var/lib/prometheus \
+        --storage.tsdb.retention.time=24h \
+        --web.listen-address=0.0.0.0:9090
+      Restart=always
+      RestartSec=5
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - useradd --system --no-create-home --shell /usr/sbin/nologin prometheus
+  - mkdir -p /etc/prometheus /var/lib/prometheus
+  - chown -R prometheus:prometheus /etc/prometheus /var/lib/prometheus
+  - curl -fsSL -o /tmp/prometheus.tar.gz https://github.com/prometheus/prometheus/releases/download/v3.5.0/prometheus-3.5.0.linux-amd64.tar.gz
+  - tar -xzf /tmp/prometheus.tar.gz -C /tmp
+  - install -m 0755 /tmp/prometheus-3.5.0.linux-amd64/prometheus /usr/local/bin/prometheus
+  - install -m 0755 /tmp/prometheus-3.5.0.linux-amd64/promtool /usr/local/bin/promtool
+  - /usr/local/bin/promtool check config /etc/prometheus/prometheus.yml
+  - systemctl daemon-reload
+  - systemctl enable --now prometheus
+  - rm -rf /tmp/prometheus.tar.gz /tmp/prometheus-3.5.0.linux-amd64
