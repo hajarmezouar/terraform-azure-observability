@@ -1,0 +1,98 @@
+skip-check:
+  # ==========================================================================
+  # App Service Plan
+  # ==========================================================================
+
+  # Requires a Premium App Service Plan SKU for production deployments.
+  # The project intentionally uses the Basic (B1) tier to minimize Azure costs.
+  - CKV_AZURE_211
+
+  # Requires multiple App Service instances for high availability.
+  # A single instance is sufficient for this training project.
+  - CKV_AZURE_212
+
+  # Requires Zone Redundancy, only available with supported Premium SKUs.
+  # Not required for the scope of this project.
+  - CKV_AZURE_225
+
+  # ==========================================================================
+  # App Service Security
+  # ==========================================================================
+
+  # Azure Entra ID authentication is outside the scope of this project.
+  # The application is intentionally deployed without built-in authentication.
+  - CKV_AZURE_13
+
+  # Client certificate authentication is not required for this training project.
+  - CKV_AZURE_17
+
+  # Azure Files persistence is not used by this application.
+  - CKV_AZURE_88
+
+  # Public access is intentionally enabled to allow demonstration and testing.
+  - CKV_AZURE_221
+
+  # Public access is intentionally enabled to allow demonstration and testing.
+  - CKV_AZURE_222
+
+  # ==========================================================================
+  # Azure Container Instance
+  # ==========================================================================
+
+  # Deploying the Container Instance inside a VNet is outside the scope
+  # of this project and would require additional networking resources.
+  - CKV_AZURE_98
+
+  # Private networking is intentionally not implemented for this TP.
+  - CKV_AZURE_245
+
+  # Managed Identity is not required for this demonstration container.
+  - CKV2_AZURE_28
+
+  # ==========================================================================
+  # Networking
+  # ==========================================================================
+
+  # HTTP (port 80) is intentionally exposed to allow access to the demo
+  # Nginx container during testing.
+  - CKV_AZURE_160
+
+  # ==========================================================================
+  # Storage Accounts
+  # ==========================================================================
+
+  # Queue logging is not required for this project.
+  - CKV_AZURE_33
+
+  # Locally Redundant Storage (LRS) is intentionally used to reduce Azure costs.
+  # Geo-redundant replication is not required.
+  - CKV_AZURE_206
+
+  # Storage account name is generated dynamically and follows Azure naming rules.
+  # This Checkov rule is a known false positive in this context.
+  - CKV_AZURE_43
+
+  # Customer Managed Keys (CMK) require Azure Key Vault and are outside
+  # the scope of this training project.
+  - CKV2_AZURE_1
+
+  # Blob service read logging is not required for this project.
+  - CKV2_AZURE_21
+
+  # Private Endpoints are intentionally not deployed to keep the
+  # infrastructure simple and publicly accessible for testing.
+  - CKV2_AZURE_33
+
+  # Soft Delete configuration is outside the scope of this project.
+  - CKV2_AZURE_38
+
+  # Shared Key authorization remains enabled because it is required
+  # by the Function App storage account configuration.
+  - CKV2_AZURE_40
+
+  # SAS expiration policies are not used in this project.
+  - CKV2_AZURE_41
+
+  # Anonymous blob access is already disabled by Terraform.
+  # This rule is skipped due to a provider limitation / Checkov behavior.
+  - CKV2_AZURE_47

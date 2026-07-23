@@ -1,0 +1,86 @@
+name: Terraform Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Terraform action"
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  TF_WORKING_DIR: terraform
+
+jobs:
+  deploy:
+    name: Terraform Operations
+
+    runs-on: ubuntu-latest
+
+    environment: production
+
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+    env:
+      TF_VAR_owner: ${{ vars.TF_VAR_OWNER }}
+      TF_VAR_resource_group_name: ${{ vars.TF_VAR_RESOURCE_GROUP_NAME }}
+      TF_VAR_app_service_plan_name: ${{ vars.TF_VAR_APP_SERVICE_PLAN_NAME }}
+      TF_VAR_location: ${{ vars.TF_VAR_LOCATION }}
+      TF_VAR_tags: ${{ vars.TF_VAR_TAGS }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Make scripts executable
+        run: chmod +x ../scripts/*.sh
+
+      - name: Terraform Init (Remote Backend)
+        run: ../scripts/terraform-init.sh
+
+      - name: Display selected action
+        run: echo "Executing Terraform ${{ github.event.inputs.action }}"
+
+      - name: Execute Terraform
+        run: |
+          case "${{ github.event.inputs.action }}" in
+
+            plan)
+              terraform plan -input=false
+              ;;
+
+            apply)
+              terraform apply -auto-approve -input=false
+              ;;
+
+            destroy)
+              terraform destroy -auto-approve -input=false
+              ;;
+
+            *)
+              echo "Unknown action."
+              exit 1
+              ;;
+
+          esac
+          

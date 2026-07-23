@@ -1,0 +1,46 @@
+# ==========================================
+# Dependabot Configuration
+# ==========================================
+#
+# Automatically checks for dependency updates
+# for GitHub Actions and Terraform providers.
+#
+# ==========================================
+
+version: 2
+
+updates:
+
+  # ==========================================
+  # GitHub Actions
+  # ==========================================
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+    commit-message:
+      prefix: "ci"
+
+    labels:
+      - "dependencies"
+
+    open-pull-requests-limit: 5
+
+  # ==========================================
+  # Terraform
+  # ==========================================
+
+  - package-ecosystem: "terraform"
+    directory: "/terraform"
+    schedule:
+      interval: "weekly"
+
+    commit-message:
+      prefix: "terraform"
+
+    labels:
+      - "dependencies"
+
+    open-pull-requests-limit: 5

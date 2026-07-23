@@ -1,0 +1,21 @@
+# =====================================================
+# CODEOWNERS
+# =====================================================
+# Automatically request reviews from the repository owner
+# when changes are made to the specified files.
+# =====================================================
+
+# Default owner for the entire repository
+* @hajarmezouar
+
+# GitHub workflows
+/.github/workflows/ @hajarmezouar
+
+# Terraform configuration
+/terraform/ @hajarmezouar
+
+# Bash scripts
+/scripts/ @hajarmezouar
+
+# Documentation
+README.md @hajarmezouar
