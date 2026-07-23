@@ -155,14 +155,14 @@ resource "azurerm_monitor_metric_alert" "cpu" {
   name                = "alert-cpu-${var.owner}"
   resource_group_name = var.resource_group_name
 
-  scopes = [var.app_service_id]
+  scopes = [var.service_plan_id]
 
   severity    = 1
   frequency   = "PT1M"
   window_size = "PT5M"
 
   criteria {
-    metric_namespace = "Microsoft.Web/sites"
+    metric_namespace = "Microsoft.Web/serverfarms"
     metric_name      = "CpuPercentage"
     aggregation      = "Average"
     operator         = "GreaterThan"

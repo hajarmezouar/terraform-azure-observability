@@ -37,3 +37,7 @@ variable "function_app_url" {
 variable "alert_email" {
   type = string
 }
+
+variable "service_plan_id" {
+  type = string
+}

@@ -30,8 +30,8 @@ resource "azurerm_linux_web_app" "app" {
       python_version = "3.11"
     }
 
-  #  health_check_path                 = "/health"
-  #  health_check_eviction_time_in_min = 10
+    health_check_path                 = "/health"
+    health_check_eviction_time_in_min = 10
   }
 
   app_settings = {

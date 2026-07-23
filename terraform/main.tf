@@ -105,12 +105,14 @@ module "observability" {
   location            = var.location
   tags                = local.tags
 
-  app_service_id     = module.app_service.app_service_id
-  function_app_id    = module.function_app.function_app_id
-  storage_account_id = module.storage.storage_account_id
+  app_service_id      = module.app_service.app_service_id
+  function_app_id     = module.function_app.function_app_id
+  storage_account_id  = module.storage.storage_account_id
 
-  app_service_url  = "https://${module.app_service.default_hostname}"
-  function_app_url = "https://${module.function_app.default_hostname}"
+  service_plan_id     = azurerm_service_plan.plan.id
+
+  app_service_url     = "https://${module.app_service.default_hostname}"
+  function_app_url    = "https://${module.function_app.default_hostname}"
 
   alert_email = "hajarmezouar617@gmail.com"
 }
