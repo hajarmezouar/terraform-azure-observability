@@ -141,7 +141,7 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan -input=false
       - name: Upload Terraform Plan
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: terraform-plan
           path: terraform/tfplan
@@ -182,7 +182,7 @@ jobs:
             --format html \
             --out-file infracost.html
       - name: Upload Infracost reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: infracost-report
           path: |
