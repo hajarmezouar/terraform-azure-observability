@@ -49,7 +49,7 @@ jobs:
       TF_VAR_prometheus_ssh_public_key: ${{ secrets.TF_VAR_PROMETHEUS_SSH_PUBLIC_KEY }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
