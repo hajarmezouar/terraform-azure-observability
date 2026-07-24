@@ -14,10 +14,11 @@ resource "azurerm_storage_account" "fn_storage" {
   resource_group_name = var.resource_group_name
   location            = var.location
 
-  account_tier                  = "Standard"
-  account_replication_type      = "LRS"
-  min_tls_version               = "TLS1_2"
-  public_network_access_enabled = false
+  account_tier                    = "Standard"
+  account_replication_type        = "LRS"
+  min_tls_version                 = "TLS1_2"
+  public_network_access_enabled   = false
+  allow_nested_items_to_be_public = false
 
   tags = merge(
     var.tags,

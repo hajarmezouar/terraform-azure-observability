@@ -20,7 +20,7 @@ resource "azurerm_linux_web_app" "app" {
     type = "SystemAssigned"
   }
   site_config {
-    always_on = false
+    always_on = true
 
     minimum_tls_version = "1.2"
 

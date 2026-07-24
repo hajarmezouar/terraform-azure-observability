@@ -199,6 +199,7 @@ resource "azurerm_public_ip" "prometheus" {
 
 # Network interface attached to the existing backend subnet.
 resource "azurerm_network_interface" "prometheus" {
+  #checkov:skip=CKV_AZURE_119:The standalone Prometheus endpoint requires a public IP; inbound access is restricted by the NSG.
   name                = "nic-prometheus-${var.owner}"
   resource_group_name = var.resource_group_name
   location            = var.prometheus_location
@@ -293,7 +294,6 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "application_errors" {
   rule {
     alert      = "HighApplicationErrorRate"
     expression = "increase(log_erreurs_total[5m]) > 5"
-    for        = "PT1M"
     severity   = 1
     enabled    = true
 
@@ -425,6 +425,7 @@ resource "azurerm_monitor_metric_alert" "cpu" {
 
 # Runs Prometheus and scrapes the App Service /metrics endpoint.
 resource "azurerm_linux_virtual_machine" "prometheus" {
+  #checkov:skip=CKV_AZURE_50:The VM uses cloud-init for Prometheus bootstrap and does not install Azure VM extension resources.
   name                = "vm-prometheus-${var.owner}"
   resource_group_name = var.resource_group_name
   location            = var.prometheus_location
