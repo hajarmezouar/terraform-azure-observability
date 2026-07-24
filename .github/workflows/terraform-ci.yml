@@ -24,7 +24,7 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
       - name: Check Terraform formatting
@@ -39,7 +39,7 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
       - name: Cache Terraform directory
@@ -61,7 +61,7 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v6
       - name: Initialize TFLint
@@ -78,7 +78,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@v12
         with:
@@ -116,7 +116,7 @@ jobs:
       TF_VAR_prometheus_ssh_public_key: ${{ secrets.TF_VAR_PROMETHEUS_SSH_PUBLIC_KEY }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
@@ -159,7 +159,7 @@ jobs:
       INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Download Terraform Plan
         uses: actions/download-artifact@v4
         with:
