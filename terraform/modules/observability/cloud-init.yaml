@@ -1,5 +1,12 @@
 #cloud-config
 
+users:
+  - default
+  - name: prometheus
+    system: true
+    shell: /usr/sbin/nologin
+    no_create_home: true
+
 package_update: true
 package_upgrade: false
 
@@ -52,7 +59,7 @@ write_files:
         --config.file=/etc/prometheus/prometheus.yml \
         --storage.tsdb.path=/var/lib/prometheus \
         --storage.tsdb.retention.time=24h \
-        --web.listen-address=0.0.0.0:9090
+        --web.listen-address=127.0.0.1:9090
       Restart=always
       RestartSec=5
 
@@ -60,14 +67,12 @@ write_files:
       WantedBy=multi-user.target
 
 runcmd:
-  - useradd --system --no-create-home --shell /usr/sbin/nologin prometheus
-  - mkdir -p /etc/prometheus /var/lib/prometheus
   - chown -R prometheus:prometheus /etc/prometheus /var/lib/prometheus
-  - curl -fsSL -o /tmp/prometheus.tar.gz https://github.com/prometheus/prometheus/releases/download/v3.5.0/prometheus-3.5.0.linux-amd64.tar.gz
+  - curl --fail --show-error --location --retry 5 --retry-delay 5 -o /tmp/prometheus.tar.gz https://github.com/prometheus/prometheus/releases/download/v3.11.3/prometheus-3.11.3.linux-amd64.tar.gz
   - tar -xzf /tmp/prometheus.tar.gz -C /tmp
-  - install -m 0755 /tmp/prometheus-3.5.0.linux-amd64/prometheus /usr/local/bin/prometheus
-  - install -m 0755 /tmp/prometheus-3.5.0.linux-amd64/promtool /usr/local/bin/promtool
+  - install -m 0755 /tmp/prometheus-3.11.3.linux-amd64/prometheus /usr/local/bin/prometheus
+  - install -m 0755 /tmp/prometheus-3.11.3.linux-amd64/promtool /usr/local/bin/promtool
   - /usr/local/bin/promtool check config /etc/prometheus/prometheus.yml
   - systemctl daemon-reload
   - systemctl enable --now prometheus
-  - rm -rf /tmp/prometheus.tar.gz /tmp/prometheus-3.5.0.linux-amd64
+  - rm -rf /tmp/prometheus.tar.gz /tmp/prometheus-3.11.3.linux-amd64

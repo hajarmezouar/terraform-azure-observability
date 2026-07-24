@@ -38,8 +38,13 @@ variable "service_plan_id" {
   type = string
 }
 
-variable "prometheus_subnet_id" {
-  description = "Subnet hosting the Prometheus VM."
+variable "prometheus_location" {
+  description = "Azure region used by the Prometheus VM and its network."
+  type        = string
+}
+
+variable "admin_source_cidr" {
+  description = "Public IPv4 CIDR permitted to connect to Prometheus through SSH."
   type        = string
 }
 

@@ -83,3 +83,9 @@ variable "admin_source_cidr" {
     error_message = "admin_source_cidr must be a valid CIDR, for example 203.0.113.10/32."
   }
 }
+
+variable "prometheus_location" {
+  description = "Azure region used by the Prometheus VM and its network."
+  type        = string
+  default     = "polandcentral"
+}

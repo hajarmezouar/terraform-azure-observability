@@ -94,7 +94,6 @@ module "network" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   tags                = local.tags
-  admin_source_cidr   = var.admin_source_cidr
 }
 
 # ── Observability ───────────────────────────────────────────────────────────────────
@@ -111,10 +110,11 @@ module "observability" {
   storage_account_id = module.storage.storage_account_id
   service_plan_id    = azurerm_service_plan.plan.id
 
-  app_service_hostname = "app-${var.owner}-tf.azurewebsites.net"
+  app_service_hostname = module.app_service.default_hostname
   function_app_url     = "https://${module.function_app.default_hostname}"
 
-  prometheus_subnet_id      = module.network.subnet_backend_id
+  prometheus_location       = var.prometheus_location
+  admin_source_cidr         = var.admin_source_cidr
   prometheus_admin_username = var.prometheus_admin_username
   prometheus_ssh_public_key = var.prometheus_ssh_public_key
 

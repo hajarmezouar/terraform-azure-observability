@@ -4,13 +4,18 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: "Terraform action"
+        description: Terraform action
         required: true
         type: choice
         options:
           - plan
           - apply
           - destroy
+      confirm_destroy:
+        description: Confirm destruction of all managed resources
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -18,69 +23,62 @@ permissions:
 
 env:
   TF_WORKING_DIR: terraform
+  TF_IN_AUTOMATION: "true"
+
+concurrency:
+  group: terraform-production
+  cancel-in-progress: false
 
 jobs:
   deploy:
     name: Terraform Operations
-
     runs-on: ubuntu-latest
-
     environment: production
-
     defaults:
       run:
         working-directory: ${{ env.TF_WORKING_DIR }}
-
     env:
       TF_VAR_owner: ${{ vars.TF_VAR_OWNER }}
       TF_VAR_resource_group_name: ${{ vars.TF_VAR_RESOURCE_GROUP_NAME }}
       TF_VAR_app_service_plan_name: ${{ vars.TF_VAR_APP_SERVICE_PLAN_NAME }}
       TF_VAR_location: ${{ vars.TF_VAR_LOCATION }}
       TF_VAR_tags: ${{ vars.TF_VAR_TAGS }}
-
+      TF_VAR_alert_email: ${{ vars.TF_VAR_ALERT_EMAIL }}
+      TF_VAR_prometheus_location: ${{ vars.TF_VAR_PROMETHEUS_LOCATION }}
+      TF_VAR_admin_source_cidr: ${{ secrets.TF_VAR_ADMIN_SOURCE_CIDR }}
+      TF_VAR_prometheus_ssh_public_key: ${{ secrets.TF_VAR_PROMETHEUS_SSH_PUBLIC_KEY }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
-
       - name: Make scripts executable
         run: chmod +x ../scripts/*.sh
-
       - name: Terraform Init (Remote Backend)
         run: ../scripts/terraform-init.sh
-
+      - name: Terraform Validate
+        run: terraform validate
       - name: Display selected action
-        run: echo "Executing Terraform ${{ github.event.inputs.action }}"
-
-      - name: Execute Terraform
+        run: echo "Executing Terraform ${{ inputs.action }}"
+      - name: Terraform Plan
+        if: inputs.action == 'plan'
+        run: terraform plan -input=false
+      - name: Terraform Apply
+        if: inputs.action == 'apply'
         run: |
-          case "${{ github.event.inputs.action }}" in
-
-            plan)
-              terraform plan -input=false
-              ;;
-
-            apply)
-              terraform apply -auto-approve -input=false
-              ;;
-
-            destroy)
-              terraform destroy -auto-approve -input=false
-              ;;
-
-            *)
-              echo "Unknown action."
-              exit 1
-              ;;
-
-          esac
-          
+          terraform plan -out=tfplan -input=false
+          terraform apply -input=false tfplan
+      - name: Require destroy confirmation
+        if: inputs.action == 'destroy' && !inputs.confirm_destroy
+        run: |
+          echo "Destroy was selected without confirmation."
+          exit 1
+      - name: Terraform Destroy
+        if: inputs.action == 'destroy' && inputs.confirm_destroy
+        run: terraform destroy -auto-approve -input=false
