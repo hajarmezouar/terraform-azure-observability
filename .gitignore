@@ -64,8 +64,18 @@ terraform/*.tfplan
 terraform-debug.log
 terraform/terraform-debug.log
 
-# Terraform lock file (optional if you don't want to version it)
-.terraform.lock.hcl
-
 # IDE
 .idea/
+
+# Python local files
+.venv/
+__pycache__/
+*.py[cod]
+
+# SSH private keys
+*.pem
+*.key
+
+# Local Azure configuration
+app/.azure/
+function/local.settings.json

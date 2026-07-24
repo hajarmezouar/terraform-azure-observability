@@ -32,3 +32,13 @@ output "backend_subnet_id" {
   description = "ID of the backend subnet."
   value       = module.network.subnet_backend_id
 }
+
+output "prometheus_vm_id" {
+  description = "Resource ID of the Prometheus virtual machine."
+  value       = module.observability.prometheus_vm_id
+}
+
+output "prometheus_public_ip" {
+  description = "Public IP address of the Prometheus virtual machine."
+  value       = module.observability.prometheus_public_ip
+}

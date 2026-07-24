@@ -10,18 +10,19 @@ from prometheus_client import Counter
 # aucune télémétrie n'a jamais été envoyée et les tables (traces, requests...) n'existent même
 # pas encore dans le Log Analytics Workspace (erreur KQL "Failed to resolve table" dans Grafana).
 from azure.monitor.opentelemetry import configure_azure_monitor
-from opentelemetry.instrumentation.flask import FlaskInstrumentor
+
+connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+
+if connection_string:
+    configure_azure_monitor(connection_string=connection_string)
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
-connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
-if connection_string:
-    configure_azure_monitor(connection_string=connection_string)
-    FlaskInstrumentor().instrument_app(app)
-else:
+if not connection_string:
     app.logger.warning(
-        "APPLICATIONINSIGHTS_CONNECTION_STRING absente — télémétrie Application Insights désactivée"
+        "APPLICATIONINSIGHTS_CONNECTION_STRING absente - "
+        "telemetrie Application Insights desactivee"
     )
 
 # Expose /metrics + les métriques HTTP automatiques (requêtes, latence, code retour

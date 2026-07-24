@@ -20,8 +20,8 @@ resource "azurerm_linux_web_app" "app" {
     type = "SystemAssigned"
   }
   site_config {
-    always_on = false
-    
+    always_on = true
+
     minimum_tls_version = "1.2"
 
     http2_enabled = true
@@ -30,12 +30,15 @@ resource "azurerm_linux_web_app" "app" {
       python_version = "3.11"
     }
 
-  #  health_check_path                 = "/health"
-  #  health_check_eviction_time_in_min = 10
+    health_check_path                 = "/health"
+    health_check_eviction_time_in_min = 10
   }
 
   app_settings = {
-    APPINSIGHTS_CONNECTION_STRING = var.application_insights_connection_string
+    APPLICATIONINSIGHTS_CONNECTION_STRING = var.application_insights_connection_string
+    APPLICATIONINSIGHTS_ROLE_NAME         = "log-analyser"
+    SCM_DO_BUILD_DURING_DEPLOYMENT        = "true"
+    OWNER                                 = var.owner
   }
 
   logs {
